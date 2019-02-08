@@ -1,0 +1,29 @@
+load video.
+
+detect features - sets some markers automatically, and adds tracks in the movie clip editor in dopesheet mode.
+
+add marker, add some more marker - adds also tracsk in the movie clip editor in dopesheet mode.
+
+minimum eight markers for enough stability
+
+choose camera preset in properties sidebar in camera data panel
+
+select all markers, and press track forward button in tool shelf. This records everything. then you get data in the graph editor view in the motion clip editor. The blue and red lines.
+
+some markers may go fubar. remove after tracking.
+
+solvetab, solve panel, solve camera motion. This calculates the camera motion.
+
+add a cube, go into camera view.
+
+in solve tab choose set as background in the scene setup. this shows the movie in the 3d view.
+
+then click setup tracking scene also in the scene setup panel.
+
+Go to reconstruction menu, choose 3d marker to mesh.
+
+In the reconstruction menu you will also find menu items like set floor and so on. Here you can define minimum three selected points as the floor for example.
+
+When done, scale down the cube in the 3d view. scale the tracking plane ot the needed size. position the cube proper.
+
+Material, use shadow only.
