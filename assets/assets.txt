@@ -1,1 +1,1 @@
-Here you can find example assets. Blend files, obj files, obj files, etc.
+Here you can find example assets. Blend files, obj files, library files, etc.
