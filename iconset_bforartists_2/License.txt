@@ -1,0 +1,17 @@
+These icons are made for Blender and Bforartists. This software is under GPL V3 license.
+
+However, the here provided icon material is not part of the source code in the first place. The icons are independently created, and just used in the software then. 
+The copyright at the icons remains at the icon authors. Which gives them the right to put the icons under any license they want.
+
+Just the material that is in the Blender or Bforartists repository falls under GPL, in conjunction with Bforartists or Blender. 
+
+This package still contains some just slightly altered material from the Blender icon sheet. Those icons are under CC BY license by the Blender author. 
+I don't claim to have any rights at those icons. I just provide them here to have a central place to maintain the icons for Bforartists.
+When in doubt, open the Blender icon sheet and compare the icons with the ones in this package.
+
+The rest of the icons, exclusively made for Bforartists, are under Public Domain license.
+
+
+Reiner "Tiles" Prokein
+
+26.09.2019
