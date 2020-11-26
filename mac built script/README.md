@@ -1,6 +1,10 @@
 # Mac build script
 Usage: bfa-build [[[[-b | --branch branch ] | [-d | --dev]]] [-c | --clean] | [-h]]
 
+  -b, --branch               specify the branch to build
+  -d, --dev                  build a dev build off master
+  -c, --clean                clean all previous build artifacts
+
 ## Setup
 Copy this script your the directory containing your bforartists clone and ensure it is executable. In my case, this is in `~/Projects/bforartists-git` (with `bforartists` a subdirectory of that).
 
