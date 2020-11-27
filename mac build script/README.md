@@ -15,9 +15,10 @@ To build BFA and create the disk image, execute this script as follows:
   `./bfa-build.sh -b [branch]`
 
 where [branch] is the name of the current release branch. For 2.6.0, this would be:
+
   `./bfa-build.sh -b 2.6.0`
 
-This will result in the application being built in `./build_darwin`.
+This will result in the application being built in `./build_darwin`. It will then build a disk image named `Bforartists-[branch]-Mac.dmg` in the current directory.
 
 ## Additional information and options
 If you've previously built this application, the previous build will be moved to `./build_darwin-old`, **replacing the previous backup** if one exists. To reset the libraries as well, downloading fresh copies, use the `-c` flag:
