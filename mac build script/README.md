@@ -1,8 +1,8 @@
 # Mac build script
 Usage: bfa-build [[[[-b | --branch branch ] | [-d | --dev]]] [-c | --clean] | [-h]]
 
-  -b, --branch               specify the branch to build
-  -d, --dev                  build a dev build off master
+  -b, --branch               specify the branch to build\
+  -d, --dev                  build a dev build off master\
   -c, --clean                clean all previous build artifacts
 
 ## Setup
