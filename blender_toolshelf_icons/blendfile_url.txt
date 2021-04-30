@@ -1,0 +1,3 @@
+The original file can be found here: 
+
+https://developer.blender.org/diffusion/BL/browse/trunk/lib/resources/
