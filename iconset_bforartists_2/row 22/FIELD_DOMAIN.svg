@@ -33,7 +33,7 @@
   <defs
      id="defs6" />
   <sodipodi:namedview
-     pagecolor="#ffffff"
+     pagecolor="#989898"
      bordercolor="#666666"
      borderopacity="1"
      objecttolerance="10"
@@ -46,7 +46,7 @@
      id="namedview4"
      showgrid="false"
      inkscape:zoom="32"
-     inkscape:cx="9.390625"
+     inkscape:cx="9.296875"
      inkscape:cy="7.578125"
      inkscape:window-x="1913"
      inkscape:window-y="30"
@@ -54,12 +54,12 @@
      inkscape:current-layer="DOMAIN_SIZE"
      inkscape:showpageshadow="0"
      inkscape:pagecheckerboard="1"
-     inkscape:deskcolor="#d1d1d1" />
+     inkscape:deskcolor="#3c3c3c" />
   <g
      id="DOMAIN_SIZE"
      inkscape:label="FIELD_DOMAIN">
     <rect
-       style="fill:#ffffff;stroke-width:2.46803;stroke-linecap:round"
+       style="display:none;fill:#ffffff;stroke-width:2.46803;stroke-linecap:round"
        id="rect11471"
        width="16"
        height="16"
