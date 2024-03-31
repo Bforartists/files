@@ -1,0 +1,24 @@
+app: Bforartists
+
+ingredients:
+  script:
+    - mkdir -p Bforartists_appimage
+    - tar xzf ../Bforartists-Linux.tar.gz -C ./Bforartists_appimage --strip-components=1
+
+script:
+  - cp -r ../Bforartists_appimage/* ./usr/bin/;
+  - cp ./usr/bin/bforartists.svg .
+  -
+  - cat > bforartists.desktop <<\EOF
+  - [Desktop Entry]
+  - Name=Bforartists
+  - GenericName=3D modeler
+  - Comment=3D modeling, animation, rendering and post-production
+  - Keywords=3d;cg;modeling;animation;painting;sculpting;texturing;video editing;video tracking;rendering;render engine;cycles;game engine;python;
+  - Exec=bforartists %f
+  - Icon=bforartists
+  - Terminal=false
+  - Type=Application
+  - Categories=Graphics;3DGraphics;
+  - MimeType=application/x-bforartists;
+  - EOF
