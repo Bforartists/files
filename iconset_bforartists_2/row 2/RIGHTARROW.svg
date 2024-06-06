@@ -46,12 +46,12 @@
      id="namedview4"
      showgrid="false"
      inkscape:zoom="32"
-     inkscape:cx="8.484375"
-     inkscape:cy="10.6875"
+     inkscape:cx="7.671875"
+     inkscape:cy="10.375"
      inkscape:window-x="-8"
      inkscape:window-y="-8"
      inkscape:window-maximized="1"
-     inkscape:current-layer="RIGHTARROW"
+     inkscape:current-layer="svg2"
      inkscape:showpageshadow="0"
      inkscape:pagecheckerboard="true"
      inkscape:deskcolor="#d1d1d1" />
@@ -65,8 +65,41 @@
     <path
        inkscape:connector-curvature="0"
        id="path821-0882-4-4"
-       d="m 4.2515427,12.565016 c -0.049817,-3.2082845 -0.1009898,-5.1554831 0,-9.0140238 0.085777,-8.8e-5 9.2118113,4.4649562 9.2118113,4.5070117 -3.204263,1.6223583 -5.6994142,2.8333651 -9.2118113,4.5070121 z"
+       d="m 4.2411616,12.940017 c -0.040913,-3.4752257 -0.08294,-5.5844384 0,-9.764024 C 4.3116076,3.1758977 11.80653,8.0124501 11.80653,8.0580047 9.1749706,9.8153493 7.125782,11.127116 4.2411616,12.940017 Z"
        style="display:inline;fill:#fefefe;fill-opacity:1;stroke:#323232;stroke-width:0.631;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;enable-background:new"
-       sodipodi:nodetypes="cccc" />
+       sodipodi:nodetypes="cccc"
+       inkscape:label="ARROW" />
+  </g>
+  <g
+     id="g58103"
+     inkscape:label="REF">
+    <rect
+       style="fill:#ff00ff;fill-opacity:1;stroke:none;stroke-width:52.9134;stroke-linecap:round;stroke-linejoin:round;stroke-opacity:1"
+       id="rect57923"
+       width="3.8779998"
+       height="3.878"
+       x="-8.6403276e-08"
+       y="6.4032502" />
+    <rect
+       style="fill:#ff00ff;fill-opacity:1;stroke:none;stroke-width:52.9134;stroke-linecap:round;stroke-linejoin:round;stroke-opacity:1"
+       id="rect57923-8"
+       width="3.8779998"
+       height="3.878"
+       x="12.122027"
+       y="6.0595002" />
+    <rect
+       style="fill:#ff00ff;fill-opacity:1;stroke:none;stroke-width:52.9134;stroke-linecap:round;stroke-linejoin:round;stroke-opacity:1"
+       id="rect57923-8-0"
+       width="3.8779998"
+       height="3.878"
+       x="6.0610137"
+       y="-0.003" />
+    <rect
+       style="fill:#ff00ff;fill-opacity:1;stroke:none;stroke-width:52.9134;stroke-linecap:round;stroke-linejoin:round;stroke-opacity:1"
+       id="rect57923-8-0-5"
+       width="3.8779998"
+       height="3.878"
+       x="6.0610137"
+       y="12.122" />
   </g>
 </svg>

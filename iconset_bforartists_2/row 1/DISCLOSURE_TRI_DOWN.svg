@@ -42,13 +42,13 @@
      inkscape:window-height="1009"
      id="namedview4"
      showgrid="false"
-     inkscape:zoom="29.5"
-     inkscape:cx="7.1864407"
-     inkscape:cy="9.8983051"
+     inkscape:zoom="59"
+     inkscape:cx="7.6949153"
+     inkscape:cy="9.779661"
      inkscape:window-x="-8"
      inkscape:window-y="-8"
      inkscape:window-maximized="1"
-     inkscape:current-layer="svg2"
+     inkscape:current-layer="DISCLOSURE_TRI_DOWN"
      inkscape:showpageshadow="0"
      inkscape:pagecheckerboard="true"
      inkscape:deskcolor="#d1d1d1" />
@@ -61,9 +61,10 @@
        inkscape:connector-curvature="0" />
     <path
        inkscape:connector-curvature="0"
-       id="path821-0882-4"
-       d="m 3.4433688,3.8792973 c 3.2082849,-0.049817 5.1554835,-0.1009898 9.0140252,0 8.8e-5,0.085777 -4.4649572,9.2118107 -4.5070127,9.2118107 C 6.328023,9.886846 5.1170165,7.3916944 3.4433688,3.8792973 Z"
+       id="path821-0882-4-4-7"
+       d="m 3.0683575,4.6973185 c 3.475225,-0.04091 5.584438,-0.08294 9.7640225,0 9.6e-5,0.07045 -4.8364565,7.5653685 -4.8820105,7.5653685 C 6.1930255,9.6311275 4.8812585,7.5819385 3.0683575,4.6973185 Z"
        style="display:inline;fill:#cbfe98;fill-opacity:1;stroke:#323232;stroke-width:0.631;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;enable-background:new"
-       sodipodi:nodetypes="cccc" />
+       sodipodi:nodetypes="cccc"
+       inkscape:label="ARROW" />
   </g>
 </svg>
