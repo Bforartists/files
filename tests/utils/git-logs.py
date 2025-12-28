@@ -2,6 +2,7 @@ import requests
 import json
 import time
 from datetime import datetime
+import os
 
 ##### INFO #####
 # This creates a short print of the commit logs of a nested from the date, and filters the Bforartists commits
@@ -15,8 +16,12 @@ from datetime import datetime
 # 🔧 CONFIGURATION
 REPO_OWNER = "Bforartists"  # GitHub repository owner
 REPO_NAME = "Bforartists"   # GitHub repository name
-START_DATE = "2025-08-27"   # YYYY-MM-DD format
+START_DATE = "2025-11-25"   # YYYY-MM-DD format
 OUTPUT_FILE = "git_log_tasks.txt"
+
+# Get the directory where the script is located
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+OUTPUT_PATH = os.path.join(SCRIPT_DIR, OUTPUT_FILE)
 
 # GitHub API URL for searching issues
 API_URL = "https://api.github.com/search/issues"
@@ -95,11 +100,11 @@ def main():
         task_list.append(formatted)
         print(formatted)
     
-    # Write results to file
+    # Write results to file in the same directory as the script
     try:
-        with open(OUTPUT_FILE, "w", encoding="utf-8") as file:
+        with open(OUTPUT_PATH, "w", encoding="utf-8") as file:
             file.write("\n".join(task_list))
-        print(f"\nResults have been written to {OUTPUT_FILE}")
+        print(f"\nResults have been written to {OUTPUT_PATH}")
         print(f"Total issues found: {len(issues)}")
         
     except IOError as e:
