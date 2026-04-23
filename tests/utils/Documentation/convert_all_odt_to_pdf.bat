@@ -1,6 +1,9 @@
 @echo off
 cd /d "%~dp0"
 
+:: Run this in the folder where the ODT files are, by double clicking this.
+:: Make sure you have Libreoffice installed to a default location, or define it below.
+
 set "LIBREOFFICE=C:\Program Files\LibreOffice\program\soffice.exe"
 
 echo Checking if LibreOffice is installed...
@@ -38,14 +41,17 @@ for %%f in (*.odt) do (
     set /a current+=1
     set /a "percent=(current*100)/count"
     
-    echo [!current!/%count% - !percent!%%] Converting "%%f"...
-    
-    "%LIBREOFFICE%" --headless --convert-to pdf "%%f"
-    
-    if errorlevel 1 (
-        echo ERROR: Failed to convert "%%f"
+    echo [!current!/%count% - !percent!%%] Processing "%%f"...
+    set "output=%%~nf.pdf"
+    if exist "!output!" (
+        echo [SKIP] "!output!" already exists; skipping "%%f"
     ) else (
-        echo [OK] Successfully converted "%%f"
+        "%LIBREOFFICE%" --headless --convert-to pdf "%%f"
+        if errorlevel 1 (
+            echo ERROR: Failed to convert "%%f"
+        ) else (
+            echo [OK] Successfully converted "%%f"
+        )
     )
     
     rem Simple progress bar using ASCII characters
