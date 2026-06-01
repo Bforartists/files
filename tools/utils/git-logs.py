@@ -16,7 +16,7 @@ import os
 # 🔧 CONFIGURATION
 REPO_OWNER = "Bforartists"  # GitHub repository owner
 REPO_NAME = "Bforartists"   # GitHub repository name
-START_DATE = "2025-11-25"   # YYYY-MM-DD format
+START_DATE = "2026-03-25"   # YYYY-MM-DD format
 OUTPUT_FILE = "git_log_tasks.txt"
 
 # Get the directory where the script is located
