@@ -228,8 +228,14 @@ def should_skip(subject, body):
 
 def _resolve_since_date(since_arg):
     """Convert a git-style date string like '7 days ago' to YYYY-MM-DD."""
+    # First: check if it's already YYYY-MM-DD
     try:
-        # Try parsing as a natural date via git
+        dt = datetime.strptime(since_arg, "%Y-%m-%d")
+        return dt.strftime("%Y-%m-%d")
+    except ValueError:
+        pass
+    # Try parsing as a natural date via git
+    try:
         result = subprocess.run(
             ["git", "log", "-1", f"--before={since_arg}", "--format=%cI"],
             capture_output=True, text=True, encoding="utf-8",
@@ -238,12 +244,6 @@ def _resolve_since_date(since_arg):
             dt = datetime.fromisoformat(result.stdout.strip())
             return dt.strftime("%Y-%m-%d")
     except Exception:
-        pass
-    # Fallback: assume it's already YYYY-MM-DD or subtract days
-    try:
-        dt = datetime.strptime(since_arg, "%Y-%m-%d")
-        return dt.strftime("%Y-%m-%d")
-    except ValueError:
         pass
     # Try "N days/weeks ago" style
     m = re.match(r"(\d+)\s+(day|days|week|weeks)\s+ago", since_arg.lower())
@@ -404,6 +404,15 @@ def generate_report(commits, show_all=False, since_date=None, until_date=None):
     interesting = []
     for c in commits:
         body = get_commit_body(c["hash"])
+
+        # Count stats for ALL commits
+        if is_fix(c["subject"]):
+            nr_fix += 1
+        if is_cleanup(c["subject"]):
+            nr_cleanup += 1
+        if is_refactor(c["subject"]):
+            nr_refactor += 1
+
         skipped = should_skip(c["subject"], body)
         if skipped and not show_all:
             continue
@@ -413,14 +422,6 @@ def generate_report(commits, show_all=False, since_date=None, until_date=None):
         c["issue_links"] = extract_issue_links(c["subject"], body)
         c["commit_link"] = get_commit_link(c["hash"])
         interesting.append(c)
-
-        # Count stats for the stats line
-        if is_fix(c["subject"]):
-            nr_fix += 1
-        if is_cleanup(c["subject"]):
-            nr_cleanup += 1
-        if is_refactor(c["subject"]):
-            nr_refactor += 1
 
     # Group by category
     grouped = defaultdict(list)
@@ -438,24 +439,20 @@ def generate_report(commits, show_all=False, since_date=None, until_date=None):
     report_lines.append(f"# Weekly Blender Report")
     report_lines.append("")
     if since_date and until_date:
-        report_lines.append(f"**{since_date} → {until_date}**")
+        since_dt = datetime.strptime(since_date, "%Y-%m-%d")
+        until_dt = datetime.strptime(until_date, "%Y-%m-%d")
+        since_str = since_dt.strftime("%B %d, %Y")
+        until_str = until_dt.strftime("%B %d, %Y")
+        report_lines.append(f"## Changelog between {since_str} - {until_str} at 12:00")
         report_lines.append("")
+    total_original = len(commits)
+    report_lines.append(f"✨ {total_original} commits in total, of which {nr_fix} are fixes, {nr_cleanup} cleanup, and {nr_refactor} refactors.")
+    report_lines.append("")
     report_lines.append("Notes for weekly communication of ongoing projects and modules.")
     report_lines.append("")
     report_lines.append("---")
     report_lines.append("")
-    report_lines.append("## New Features and Changes")
-    report_lines.append("")
-
-    # ── Stats bar ──
-    total_original = len(commits)
-    total_shown = len(interesting)
-    nr_features = total_shown - nr_fix - nr_cleanup - nr_refactor
-    report_lines.append(
-        f"> ✨ {total_shown} changes this week "
-        f"({nr_features} features, {nr_fix} fixes, {nr_cleanup} cleanup, {nr_refactor} refactor) "
-        f"out of {total_original} total commits."
-    )
+    report_lines.append("## 📰 New Features and Changes")
     report_lines.append("")
 
     for category, items in sorted(grouped.items(), key=sort_key):
