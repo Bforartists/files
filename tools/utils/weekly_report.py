@@ -3,13 +3,20 @@
 Blender Weekly Report Generator
 
 Generates a devtalk-style weekly changelog from the Blender git repository.
-Filters out fixes, cleanups, and minor performance changes to focus on
+By default filters out fixes, cleanups, and minor performance changes to focus on
 exciting, human-readable features and improvements.
 
+Can run in two modes:
+  1. Local repo:  point --repo at a full local clone of Blender.
+  2. Remote mode: omit --repo and it auto-clones a shallow, blobless copy
+     (metadata only, ~1.2 MB) and fetches only the requested date range.
+
 Usage:
-    python tools/utils/weekly_report.py
-    python tools/utils/weekly_report.py --since "14 days ago"
-    python tools/utils/weekly_report.py --since "2026-05-11" --until "2026-05-18"
+    python weekly_report.py                           # Remote mode, last 7 full days
+    python weekly_report.py --repo /path/to/blender   # Local repo mode
+    python weekly_report.py --since 2026-06-11 --until 2026-05-18
+    python weekly_report.py --since 2026-06-11
+    python weekly_report.py --show-all                 # Include fixes/cleanups
 """
 
 import argparse
@@ -19,12 +26,18 @@ import subprocess
 import sys
 from collections import defaultdict
 from datetime import datetime, timedelta
+from pathlib import Path
+
+# ── Remote repository configuration ───────────────────────────────────────
+# When --repo is not given, the script auto-clones a shallow copy of Blender.
+BLENDER_REPO_URL = "https://github.com/blender/blender.git"
+REPO_DIR_NAME = ".blender-src"
 
 # ── Category lookup table ──────────────────────────────────────────────────
 # Each entry: (display_name, [list of case-insensitive substrings to match])
 # Matches are checked against the subject line and commit body.
 CATEGORY_KEYWORDS = [
-    ("Animación", [
+    ("Animation", [
         "anim:", "fcurve", "f-curve", "action ", "armature",
         "pose ", "keyframe", "motion path", "graph editor", "nla",
         "driver:", "rigify", "pose slide", "bone ",
@@ -209,6 +222,84 @@ def should_skip(subject, body):
     return False
 
 
+# ── Remote repository helpers ─────────────────────────────────────────────
+# These handle the self-contained shallow clone mode (when --repo is omitted).
+
+
+def _resolve_since_date(since_arg):
+    """Convert a git-style date string like '7 days ago' to YYYY-MM-DD."""
+    try:
+        # Try parsing as a natural date via git
+        result = subprocess.run(
+            ["git", "log", "-1", f"--before={since_arg}", "--format=%cI"],
+            capture_output=True, text=True, encoding="utf-8",
+        )
+        if result.returncode == 0 and result.stdout.strip():
+            dt = datetime.fromisoformat(result.stdout.strip())
+            return dt.strftime("%Y-%m-%d")
+    except Exception:
+        pass
+    # Fallback: assume it's already YYYY-MM-DD or subtract days
+    try:
+        dt = datetime.strptime(since_arg, "%Y-%m-%d")
+        return dt.strftime("%Y-%m-%d")
+    except ValueError:
+        pass
+    # Try "N days/weeks ago" style
+    m = re.match(r"(\d+)\s+(day|days|week|weeks)\s+ago", since_arg.lower())
+    if m:
+        num = int(m.group(1))
+        unit = m.group(2)
+        days = num * 7 if "week" in unit else num
+        dt = datetime.now() - timedelta(days=days)
+        return dt.strftime("%Y-%m-%d")
+    # Last resort: 7 days ago
+    return (datetime.now() - timedelta(days=7)).strftime("%Y-%m-%d")
+
+
+def _script_dir():
+    """Return the directory where this script lives."""
+    return Path(__file__).parent.resolve()
+
+
+def ensure_shallow_repo(since_date, repo_url=None):
+    """
+    Create or update a shallow, blobless clone of the Blender repository.
+    Returns the Path to the repo directory.
+    """
+    url = repo_url or BLENDER_REPO_URL
+    repo_dir = _script_dir() / REPO_DIR_NAME
+
+    if repo_dir.exists():
+        print(f"📡 Updating existing shallow clone in {repo_dir}…", file=sys.stderr)
+        subprocess.run(
+            ["git", "fetch", "--shallow-since", since_date, "origin", "main"],
+            cwd=repo_dir, check=True, capture_output=True,
+        )
+        subprocess.run(
+            ["git", "update-ref", "HEAD", "origin/main"],
+            cwd=repo_dir, check=True, capture_output=True,
+        )
+        print("✅ Shallow clone updated.", file=sys.stderr)
+    else:
+        print(f"📥 Creating shallow clone (metadata only, no code files)…", file=sys.stderr)
+        print(f"    since {since_date}", file=sys.stderr)
+        subprocess.run(
+            [
+                "git", "clone",
+                "--filter=blob:none",
+                "--no-checkout",
+                "--shallow-since", since_date,
+                "--single-branch", "--branch", "main",
+                url, str(repo_dir),
+            ],
+            check=True, capture_output=True,
+        )
+        print(f"✅ Shallow clone created at {repo_dir}", file=sys.stderr)
+
+    return repo_dir
+
+
 # ── Parsing helpers ───────────────────────────────────────────────────────
 
 def _run_git(args):
@@ -298,12 +389,23 @@ def get_commits(since, until):
 
 # ── Report generation ─────────────────────────────────────────────────────
 
-def generate_report(commits):
-    """Generate the markdown report from the filtered and categorized commits."""
+def generate_report(commits, show_all=False, since_date=None, until_date=None):
+    """
+    Generate the markdown report from the filtered and categorized commits.
+
+    If show_all is True, fixes/cleanups/refactors are included in the output
+    (mirroring parsero's inclusive behavior).
+    """
+    # ── Stats counters (inspired by parsero) ──
+    nr_fix = 0
+    nr_cleanup = 0
+    nr_refactor = 0
+
     interesting = []
     for c in commits:
         body = get_commit_body(c["hash"])
-        if should_skip(c["subject"], body):
+        skipped = should_skip(c["subject"], body)
+        if skipped and not show_all:
             continue
         c["body"] = body
         c["category"] = categorize(c["subject"], body)
@@ -311,6 +413,14 @@ def generate_report(commits):
         c["issue_links"] = extract_issue_links(c["subject"], body)
         c["commit_link"] = get_commit_link(c["hash"])
         interesting.append(c)
+
+        # Count stats for the stats line
+        if is_fix(c["subject"]):
+            nr_fix += 1
+        if is_cleanup(c["subject"]):
+            nr_cleanup += 1
+        if is_refactor(c["subject"]):
+            nr_refactor += 1
 
     # Group by category
     grouped = defaultdict(list)
@@ -325,9 +435,11 @@ def generate_report(commits):
     report_lines = []
 
     # ── Header ──
-    week_ending = datetime.now().strftime("%d %B %Y")
-    report_lines.append(f"# {week_ending}")
+    report_lines.append(f"# Weekly Blender Report")
     report_lines.append("")
+    if since_date and until_date:
+        report_lines.append(f"**{since_date} → {until_date}**")
+        report_lines.append("")
     report_lines.append("Notes for weekly communication of ongoing projects and modules.")
     report_lines.append("")
     report_lines.append("---")
@@ -338,7 +450,12 @@ def generate_report(commits):
     # ── Stats bar ──
     total_original = len(commits)
     total_shown = len(interesting)
-    report_lines.append(f"> ✨ {total_shown} interesting changes out of {total_original} total commits this week.")
+    nr_features = total_shown - nr_fix - nr_cleanup - nr_refactor
+    report_lines.append(
+        f"> ✨ {total_shown} changes this week "
+        f"({nr_features} features, {nr_fix} fixes, {nr_cleanup} cleanup, {nr_refactor} refactor) "
+        f"out of {total_original} total commits."
+    )
     report_lines.append("")
 
     for category, items in sorted(grouped.items(), key=sort_key):
@@ -400,6 +517,9 @@ def generate_report(commits):
     report_lines.append("This is a selection of changes that happened over the last week. "
                         "For a full overview including fixes, code-only changes and more visit "
                         f"[projects.blender.org](https://projects.blender.org/blender/blender/commits/branch/main).")
+    if show_all:
+        report_lines.append("")
+        report_lines.append("> *Report mode: `--show-all` — includes fixes, cleanups, and refactors.*")
     report_lines.append("")
 
     return "\n".join(report_lines)
@@ -408,13 +528,24 @@ def generate_report(commits):
 # ── Main ───────────────────────────────────────────────────────────────────
 
 def main():
-    parser = argparse.ArgumentParser(description="Generate a Blender weekly report.")
-    parser.add_argument("--since", default="1 week ago",
-                        help="Start date for commit range (default: '1 week ago')")
+    parser = argparse.ArgumentParser(
+        description="Generate a Blender weekly report.",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=__doc__,
+    )
+    parser.add_argument("--since", default=None,
+                        help="Start date (YYYY-MM-DD or relative like '7 days ago'). "
+                             "Default: 7 days before --until.")
     parser.add_argument("--until", default=None,
-                        help="End date for commit range (default: now)")
-    parser.add_argument("--repo", default=".",
-                        help="Path to Blender git repository (default: current dir)")
+                        help="End date (YYYY-MM-DD). Default: today")
+    parser.add_argument("--repo", default=None,
+                        help="Path to local git repository. If omitted, auto-clones "
+                             "a shallow copy (metadata only, ~1.2 MB).")
+    parser.add_argument("--remote-url", default=None,
+                        help=f"Remote repository URL (default: {BLENDER_REPO_URL})")
+    parser.add_argument("--show-all", action="store_true",
+                        help="Include fixes, cleanups, and refactors in the report "
+                             "(like parsero's inclusive behavior)")
     parser.add_argument("--output", "-o", default=None,
                         help="Output file path (default: auto-saves to reports/ folder)")
     parser.add_argument("--print", "-p", action="store_true", dest="print_stdout",
@@ -422,33 +553,49 @@ def main():
     args = parser.parse_args()
 
     global REPO_PATH
-    REPO_PATH = args.repo
 
-    since = args.since
-    until = args.until or datetime.now().strftime("%Y-%m-%d")
+    # Default: last 7 days as concrete dates.
+    today = datetime.now().strftime("%Y-%m-%d")
+    since = args.since or (datetime.now() - timedelta(days=7)).strftime("%Y-%m-%d")
+    until = args.until or today
 
-    print(f"🔍 Scanning commits from {since} to {until} in {REPO_PATH}...", file=sys.stderr)
+    # ── Resolve repository ──
+    if args.repo:
+        # Use existing local repo (original behavior)
+        REPO_PATH = args.repo
+        print(f"🔍 Using local repository: {REPO_PATH}", file=sys.stderr)
+    else:
+        # Self-contained mode: shallow clone from remote
+        since_date = _resolve_since_date(since)
+        print(f"🔍 No local repo specified — using remote mode.", file=sys.stderr)
+        print(f"   Shallow clone will fetch commits since {since_date}", file=sys.stderr)
+        REPO_PATH = str(ensure_shallow_repo(since_date, args.remote_url))
+
+    print(f"📅 Scanning commits from {since} to {until} in {REPO_PATH}...", file=sys.stderr)
 
     commits = get_commits(since, until)
     print(f"📥 Found {len(commits)} total commits.", file=sys.stderr)
 
-    report = generate_report(commits)
+    # Resolve display dates for the report header.
+    report_since = _resolve_since_date(since)
+    report_until = until
+    report = generate_report(commits, show_all=args.show_all,
+                             since_date=report_since, until_date=report_until)
 
     # ── Auto-save to file ──
-    week_end = datetime.now()
-    week_start = week_end - timedelta(days=7)
-    date_str = week_end.strftime("%Y-%m-%d")
-    default_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "reports")
-    os.makedirs(default_dir, exist_ok=True)
+    date_range = f"{report_since}__{report_until}"
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    reports_dir = os.path.join(script_dir, "reports")
+    os.makedirs(reports_dir, exist_ok=True)
     output_path = args.output or os.path.join(
-        default_dir, f"weekly-report-{date_str}.md"
+        reports_dir, f"weekly-report-{date_range}.md"
     )
 
     with open(output_path, "w", encoding="utf-8") as f:
         f.write(report)
     print(f"✅ Report saved to {output_path}", file=sys.stderr)
 
-    # ── Also print to stdout if requested ──
+    # ── Also print to stdout (always, so you can preview or pipe) ──
     if args.print_stdout or args.output is None:
         print(report)
 
